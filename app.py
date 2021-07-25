@@ -6,7 +6,7 @@ from scraper import Scraper
 app = Flask(__name__)
 
 ButtonPressed = 0
-@app.route('/button', methods=["GET", "POST"])
+@app.route('/', methods=["GET", "POST"])
 def button():
     # On button press, run show_tables scraper function
     if request.method == "POST":
