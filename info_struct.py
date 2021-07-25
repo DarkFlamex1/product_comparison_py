@@ -5,15 +5,16 @@ class info_struct:
     """
 
     # Dictionary storing all the scraped information
-    flavor_info = {
-        "Flavor": '',
-        "ABV": '',
-        "Calories": '',
-        "Can_Size": '',
-        "Sugar": '',
-        "Sizes_Costs": {},
-    }
-
+    def __init__(self):
+        self.flavor_info = {
+            "Flavor": '',
+            "ABV": '',
+            "Calories": '',
+            "Can_Size": '',
+            "Sugar": '',
+            "Sizes_Costs": {},
+        }
+    
     """
     Helper function that sets the value in flavor info given a key and value.
     No error checking, can be implemented later.

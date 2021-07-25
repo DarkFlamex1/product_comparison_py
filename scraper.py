@@ -18,7 +18,16 @@ babe_offerings = []
 
 def scrape_babe_flavor(url, info):
     """
-    given a flavor url, pulls the information for it
+    given a flavor url, pulls the defined information in info_struct.py:
+    flavor_info = {
+        "Flavor": '',
+        "ABV": '',
+        "Calories": '',
+        "Can_Size": '',
+        "Sugar": '',
+        "Sizes_Costs": {},
+    }
+
     :return:
     """
 
@@ -39,12 +48,11 @@ def scrape_babe_flavor(url, info):
     #Grab ABV from the page
     """
     Search for all span elements and then check with regex to find the ABV number
-    We use 0:4 as all the ABV's are at most one decimal point
     """
     abv_search = flav_soup.find_all('span')
     for item in abv_search:
         if(re.search(r"(\d*.\d)% ABV", item.text)):
-            info.set('ABV', re.search(r"(\d*.\d)% ABV", item.text).group()[0:4])
+            info.set('ABV', re.search(r"(\d*.\d*)% ABV", item.text).group(1))
             break
 
     '''
@@ -58,6 +66,7 @@ def scrape_babe_flavor(url, info):
     Therefore we will take the first and 4th element, (0 and 3) as sizes and costs
     '''
 
+    #Iterate through all the prices and pack sizes
     prices = flav_soup.find_all('option')
     for price_item in prices:
         #clean up the text
@@ -69,6 +78,7 @@ def scrape_babe_flavor(url, info):
 
         info.set_costs_sizes(size,cost)
 
+    #Nutrition information search
     nutrition = faq_soup.find_all('div', {'class':"collapsible-content__inner collapsible-content__inner--faq rte"})
     for nutrition_info in nutrition:
         #use regex to search for the calories and carbs
@@ -90,6 +100,93 @@ def scrape_babe_flavor(url, info):
     print(info.get("Sizes_Costs"))
 
 
+def scrape_bev_flavor(url, info):
+    """
+        given a flavor url, pulls the defined information in info_struct.py:
+        flavor_info = {
+            "Flavor": '',
+            "ABV": '',
+            "Calories": '',
+            "Can_Size": '',
+            "Sugar": '',
+            "Sizes_Costs": {},
+        }
+
+        :return:
+    """
+
+    # Request and process the page for scraping
+    flav_page = requests.get(
+        url
+    )
+    #This is the beautiful soup object of our bev flavor
+    flav_soup = BeautifulSoup(flav_page.content, 'lxml')
+
+    #The faq page
+    faq_page = requests.get(
+        'https://drinkbabe.net/pages/faqs'
+    )
+    #The faq soup object
+    faq_soup = BeautifulSoup(faq_page.content, 'lxml')
+
+    # Grab product flavor from page title
+    info.set('Flavor', flav_soup.select('h1.product-single__title')[0].text.strip())
+
+    """
+    Search for ABV, calroies, and sugar using regex expressions and matching groups
+    """
+    span_search = flav_soup.find_all('span')
+    for item in span_search:
+        #Check for ABV
+        abv_search = re.search(r"(\d*.\d)% ABV", item.text)
+        calories_search = re.search(r"(\d*) CALORIES", item.text)
+        sugar_search = re.search(r"(.*)G SUGAR", item.text)
+
+        # if abv search matched, set the information
+        if (abv_search):
+            info.set('ABV', abv_search.group(1))
+        #if calorie search matched, set the information
+        if (calories_search):
+            info.set('Calories', calories_search.group(1))
+        #if sugar search matched, set the information
+        if (sugar_search):
+            #Check for a special case on website where they use capital o as a zero
+            if(sugar_search.group(1) == "O"):
+                info.set('Sugar', 0)
+            else:
+                info.set('Sugar', sugar_search.group(1))
+
+    '''
+        Grab all the prices by looking at the radio container fields
+
+        Therefore we will take the first and 4th element, (0 and 3) as sizes and costs
+        '''
+
+    # Iterate through all the prices and pack sizes
+    prices = flav_soup.find_all('div', {'class':'radio_container'})
+
+    #Hard coded price, should use selemium instead!
+    i = 0
+    list_prices = ['$49($39 via Bev club)', '99($79 via Bev club)', '$190($152 via Bev club)']
+
+    for price_item in prices:
+        # clean up the text
+        price_txt = price_item.text.strip().split()
+        #Check if a valid price
+        if(price_txt):
+            cost = list_prices[i]
+            size = price_txt[0]
+            i += 1
+            info.set_costs_sizes(size, cost)
+
+
+
+
+    print(info.get("Flavor"))
+    print(info.get("ABV"))
+    print(info.get("Calories"))
+    print(info.get("Sugar"))
+    print(info.get("Sizes_Costs"))
 
 """
 Parse given text for abv information
@@ -119,4 +216,7 @@ soup = BeautifulSoup(page.content, 'html.parser')
 
 #Tests
 babered = info_struct()
+bevrose = info_struct()
+
 scrape_babe_flavor("https://drinkbabe.net/collections/wine/products/babe-grigio", babered)
+scrape_bev_flavor("https://drinkbev.com/products/rose-wine", bevrose)
