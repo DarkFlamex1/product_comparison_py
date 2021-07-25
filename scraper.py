@@ -3,12 +3,18 @@ Simple scraper: currently analyzing the sources we are using!
 """
 
 import requests
+from bs4 import BeautifulSoup
 
-res = requests.get(
-    'https://drinkbabe.net/collections/wine/products/babe-100-rose'
+#Testing variables for a singular page
+babepage = 'https://drinkbabe.net/collections/wine/products/babe-100-rose'
+bevpage = 'https://drinkbev.com/products/rose-wine'
+
+#send request and fetch the html page defined
+page = requests.get(
+    bevpage
 )
 
-txt = res.text
-status = res.status_code
+soup = BeautifulSoup(page.content, 'html.parser')
+title = soup.title.text
 
-print(txt,status)
+print(title)
