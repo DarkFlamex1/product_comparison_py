@@ -22,4 +22,11 @@ class info_struct:
     No error checking, can be implemented later.
     """
     def set(self, key, value):
-        self.flavor_info.update(key, value);
+        self.flavor_info.update({key:value})
+
+    """
+        Helper function that gets the value in flavor info given a key and value.
+        No error checking, can be implemented later.
+    """
+    def get(self, key):
+        return self.flavor_info.get(key)

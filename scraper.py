@@ -7,6 +7,8 @@ import requests
 from bs4 import BeautifulSoup
 
 #Testing variables for a singular page
+from info_struct import info_struct
+
 babepage_link = 'https://drinkbabe.net/collections/wine/products/babe-100-rose'
 bevpage_link = 'https://drinkbev.com/products/rose-wine'
 
@@ -14,32 +16,24 @@ bevpage_link = 'https://drinkbev.com/products/rose-wine'
 bev_offerings = []
 babe_offerings = []
 
-""""
-#Dictionary storing all the scraped information
-bevinfo = {
-    "Flavor"     : '',
-    "ABV"        : '',
-    "Calories"   : '',
-    "Can_Size"   : '',
-    "Gluten_Free": '',
-    "Carbs"      : '',
-    "Sugar"      : '',
-    "Sizes"      : [],
-    "Costs"      : [],
-}
+def scrape_babe_flavor(url, info):
+    """
+    given a flavor url, pulls the information for it
+    :return:
+    """
 
-#All the features we will be comparing are stored in these dictionaries
-babeinfo = {
-    "Flavor"     : '',
-    "ABV"        : '',
-    "Calories"   : '',
-    "Can_Size"   : '',
-    "Gluten_Free": '',
-    "Carbs"      : '',
-    "Sugar"      : '',
-    "Sizes"      : [],
-    "Costs"      : [],
-}"""
+    #Request and process the page for scraping
+    flav_page = requests.get(
+        url
+    )
+    flav_soup = BeautifulSoup(flav_page.content, 'html.parser')
+
+
+    #Method to grab flavor for each babe page is to grab the heading and then take last word
+    info.set('Flavor', flav_soup.title.text.split()[1])
+    print(info.get('Flavor'))
+
+
 
 """
 Parse given text for abv information
@@ -76,8 +70,9 @@ page = requests.get(
 )
 
 soup = BeautifulSoup(page.content, 'html.parser')
-title = soup.title.text
 
 parse_abv(page, soup)
 
-
+#Tests
+babered = info_struct()
+scrape_babe_flavor("https://drinkbabe.net/collections/wine/products/babe-red", babered)
