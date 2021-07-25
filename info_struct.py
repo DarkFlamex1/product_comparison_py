@@ -13,8 +13,7 @@ class info_struct:
         "Gluten_Free": '',
         "Carbs": '',
         "Sugar": '',
-        "Sizes": [],
-        "Costs": [],
+        "Sizes_Costs": {},
     }
 
     """
@@ -23,6 +22,15 @@ class info_struct:
     """
     def set(self, key, value):
         self.flavor_info.update({key:value})
+
+    """
+        Helper function that sets the value in of the sizes list given a value.
+        No error checking, can be implemented later.
+    """
+    def set_costs_sizes(self, size, cost):
+        self.flavor_info["Sizes_Costs"].update({size:cost})
+
+
 
     """
         Helper function that gets the value in flavor info given a key and value.

@@ -26,15 +26,43 @@ def scrape_babe_flavor(url, info):
     flav_page = requests.get(
         url
     )
-    flav_soup = BeautifulSoup(flav_page.content, 'html.parser')
+    flav_soup = BeautifulSoup(flav_page.content, 'lxml')
+
+    #Grab product flavor from page title
+    info.set('Flavor', flav_soup.select('h1.product-single__title')[0].text.strip())
+
+    #Grab ABV from the page
+    #print(flav_soup.find_all(string=re.compile(r"(....)% ABV")))
+
+    #Grab sizes offered look for class=variant-input, data-index=option1 ...
+    sizes_offered = flav_soup.find_all(attrs={"class":"variant-input"})
+    for item in sizes_offered:
+        print(item.attrs['data-value'])
+
+    '''
+    Grab all the prices by looking at the option fields
+    
+    When looking at this data it appears as lists:
+    ['8', 'PACK', '-', '$30.99', 'USD']
+    ['12', 'PACK', '-', '$43.99', 'USD']
+    ['24', 'PACK', '-', '$78.99', 'USD']
+    
+    Therefore we will take the first and 4th element, (0 and 3) as sizes and costs
+    '''
+
+    prices = flav_soup.find_all('option')
+    for price_item in prices:
+        #clean up the text
+        price_txt = price_item.text.strip().split()
+
+        #Get the elements of packs and cost
+        size = price_txt[0]
+        cost = price_txt[3]
+
+        info.set_costs_sizes(size,cost)
 
 
-    #Method to grab flavor for each babe page is to grab the heading and then take last word
-    info.set('Flavor', flav_soup.title.text.split()[1])
-    print(info.get('Flavor'))
-
-
-
+    print(info.get("Sizes_Costs"))
 """
 Parse given text for abv information
 """
