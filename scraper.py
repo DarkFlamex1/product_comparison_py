@@ -28,16 +28,24 @@ def scrape_babe_flavor(url, info):
     )
     flav_soup = BeautifulSoup(flav_page.content, 'lxml')
 
+    faq_page = requests.get(
+        'https://drinkbabe.net/pages/faqs'
+    )
+    faq_soup = BeautifulSoup(faq_page.content, 'lxml')
+
     #Grab product flavor from page title
     info.set('Flavor', flav_soup.select('h1.product-single__title')[0].text.strip())
 
     #Grab ABV from the page
-    #print(flav_soup.find_all(string=re.compile(r"(....)% ABV")))
-
-    #Grab sizes offered look for class=variant-input, data-index=option1 ...
-    sizes_offered = flav_soup.find_all(attrs={"class":"variant-input"})
-    for item in sizes_offered:
-        print(item.attrs['data-value'])
+    """
+    Search for all span elements and then check with regex to find the ABV number
+    We use 0:4 as all the ABV's are at most one decimal point
+    """
+    abv_search = flav_soup.find_all('span')
+    for item in abv_search:
+        if(re.search(r"(\d*.\d)% ABV", item.text)):
+            info.set('ABV', re.search(r"(\d*.\d)% ABV", item.text).group()[0:4])
+            break
 
     '''
     Grab all the prices by looking at the option fields
@@ -61,8 +69,28 @@ def scrape_babe_flavor(url, info):
 
         info.set_costs_sizes(size,cost)
 
+    nutrition = faq_soup.find_all('div', {'class':"collapsible-content__inner collapsible-content__inner--faq rte"})
+    for nutrition_info in nutrition:
+        #use regex to search for the calories and carbs
+        regexp = info.get('Flavor').split()[1].upper() + " IS (\d*) CALORIES AND (\d.\d*)"
+        searchresult = re.search(regexp, nutrition_info.text)
+        #if we get a result!
+        if(searchresult):
+            '''
+            Using searchresult.groups shows us the calories in first index and sugar in second
+            '''
+            info.set("Calories",searchresult.group(1))
+            info.set("Sugar", searchresult.group(2))
+            break
 
+    print(info.get("Flavor"))
+    print(info.get("ABV"))
+    print(info.get("Calories"))
+    print(info.get("Sugar"))
     print(info.get("Sizes_Costs"))
+
+
+
 """
 Parse given text for abv information
 """
@@ -81,16 +109,6 @@ Parse given text for abv information
 
 #write up focumentation as we go in comments, then see
 
-
-
-
-def parse_abv(pg_txt, soup):
-    #print(soup.find_all(attrs={'class': 'flavour-content'}))
-    #Works with bev | could be a faster way(iterating through above code and then finding regex?)
-    alcContent = soup.find_all(string=re.compile(r"(....)% ABV"))
-    print(alcContent)
-
-
 #turn into function
 #send request and fetch the html page defined
 page = requests.get(
@@ -99,8 +117,6 @@ page = requests.get(
 
 soup = BeautifulSoup(page.content, 'html.parser')
 
-parse_abv(page, soup)
-
 #Tests
 babered = info_struct()
-scrape_babe_flavor("https://drinkbabe.net/collections/wine/products/babe-red", babered)
+scrape_babe_flavor("https://drinkbabe.net/collections/wine/products/babe-grigio", babered)

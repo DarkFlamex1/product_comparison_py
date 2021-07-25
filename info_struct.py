@@ -10,8 +10,6 @@ class info_struct:
         "ABV": '',
         "Calories": '',
         "Can_Size": '',
-        "Gluten_Free": '',
-        "Carbs": '',
         "Sugar": '',
         "Sizes_Costs": {},
     }
