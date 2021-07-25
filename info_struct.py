@@ -1,3 +1,4 @@
+import pandas as pd
 
 class info_struct:
     """
@@ -29,7 +30,11 @@ class info_struct:
     def set_costs_sizes(self, size, cost):
         self.flavor_info["Sizes_Costs"].update({size:cost})
 
-
+    '''
+    Return a pandas dataframe
+    '''
+    def get_dict_as_df(self):
+        return pd.DataFrame.from_dict(self.flavor_info, orient='index')
 
     """
         Helper function that gets the value in flavor info given a key and value.
