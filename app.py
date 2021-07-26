@@ -34,4 +34,4 @@ def show_tables():
                                                 bevpd.to_html(classes='bev')],
                            titles = ['na', 'Babe', 'Bev'])
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=True)
