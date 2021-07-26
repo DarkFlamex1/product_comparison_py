@@ -18,9 +18,10 @@ bev_offerings = []
 babe_offerings = []
 '''
 
-
+'''
+Scraper class is an object that can scrape either babe flavor urls or bev flavor urls using the scrape function
+'''
 class Scraper:
-
     def __init__(self):
         self.offerings = []
 
